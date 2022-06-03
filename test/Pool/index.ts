@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { MintableERC20__factory, Pool__factory } from "../../typechain";
 
 describe("Pool", () => {
@@ -14,7 +14,13 @@ describe("Pool", () => {
       token.deployTransaction.wait(),
       rewardToken.deployTransaction.wait()
     ])
-    const pool = await new Pool__factory(deployer).deploy(token.address, rewardToken.address)
+    const pool = await upgrades.deployProxy(
+      new Pool__factory(deployer),
+      [
+        token.address,
+        rewardToken.address
+      ]
+    )
     await pool.deployTransaction.wait()
 
     return {

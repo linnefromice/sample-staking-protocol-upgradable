@@ -1,35 +1,37 @@
 // SPDX-Licence-Identifier: MIT
 pragma solidity 0.8.4;
 
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 interface IMintableERC20 {
   function mint(uint256) external returns (bool);
 }
 
-contract Pool is Ownable {
-  using SafeMath for uint256;
-  using SafeERC20 for IERC20;
+contract Pool is Initializable, OwnableUpgradeable {
+  using SafeMathUpgradeable for uint256;
+  using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  IERC20 public token;
-  IERC20 public rewardToken;
-  uint256 public maxSupply = 1 * 1000000 * 1e18; // 1 million;
+  IERC20Upgradeable public token;
+  IERC20Upgradeable public rewardToken;
+  uint256 public maxSupply;
   uint256 public _totalSupply;
   mapping(address => uint256) private _balances;
 
   event Deposited(address indexed user, uint256 amount);
   event Withdrawed(address indexed user, uint256 amount);
 
-  constructor(
+  function initialize(
     address _token,
     address _rewardToken
-  ) {
-    token = IERC20(_token);
-    rewardToken = IERC20(_rewardToken);
+  ) initializer public {
+    token = IERC20Upgradeable(_token);
+    rewardToken = IERC20Upgradeable(_rewardToken);
     
     // premint rewardToken
+    maxSupply = 1 * 1000000 * 1e18; // 1 million;
     IMintableERC20(_rewardToken).mint(maxSupply);
   }
 
