@@ -111,6 +111,33 @@ describe("ExampleToken", () => {
         expect(_contractVersion.toNumber()).to.eq(2)
         expect(_upgradedVersion.toNumber()).to.eq(2)
       })
+
+      describe("fail to call reinitializer multiple times", () => {
+        it("use UpgradeProxyOptions in HardhatUpgrades.upgradeProxy", async () => {
+          const [owner] = await ethers.getSigners();
+          const { token } = await setup(owner)
+  
+          // upgrade to v2
+          const upgraded = await upgrades.upgradeProxy(
+            token,
+            new ExampleTokenV2__factory(owner),
+            { call: { fn: "upgradeNextVersionWithUpgradeable" } }
+          );
+          await expect(upgraded.upgradeNextVersionWithUpgradeable()).to.be.revertedWith("Initializable: contract is already initialized")
+        })
+        it("normal", async () => {
+          const [owner] = await ethers.getSigners();
+          const { token } = await setup(owner)
+  
+          // upgrade to v2
+          const upgraded = await upgrades.upgradeProxy(
+            token,
+            new ExampleTokenV2__factory(owner)
+          );
+          await upgraded.upgradeNextVersionWithUpgradeable()
+          await expect(upgraded.upgradeNextVersionWithUpgradeable()).to.be.revertedWith("Initializable: contract is already initialized")
+        })  
+      })
     })
   })
 })
