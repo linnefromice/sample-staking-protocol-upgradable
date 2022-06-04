@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
-import { MintableERC20__factory, Pool__factory } from "../../typechain";
+import { ethers, upgrades } from "hardhat";
+import { MintableERC20__factory, Pool__factory, StakingPool__factory } from "../../typechain";
 
 describe("Pool", () => {
   const setup = async (deployer: SignerWithAddress) => {
@@ -14,7 +14,13 @@ describe("Pool", () => {
       token.deployTransaction.wait(),
       rewardToken.deployTransaction.wait()
     ])
-    const pool = await new Pool__factory(deployer).deploy(token.address, rewardToken.address)
+    const pool = await upgrades.deployProxy(
+      new Pool__factory(deployer),
+      [
+        token.address,
+        rewardToken.address
+      ]
+    )
     await pool.deployTransaction.wait()
 
     return {
@@ -36,6 +42,31 @@ describe("Pool", () => {
 
     expect("0").to.eq((await token.balanceOf(pool.address)).toString())
     expect("0").to.eq((await pool.balanceOf(owner.address)).toString())
+  })
+
+  it("Upgradable", async () => {
+    const [owner] = await ethers.getSigners();
+    const { pool } = await setup(owner)
+    const [tokenV2, rewardTokenV2] = await Promise.all([
+      new MintableERC20__factory(owner).deploy("V2Token", "V2TOKEN"),
+      new MintableERC20__factory(owner).deploy("V2 Reward Token", "V2REWARD_TOKEN")
+    ])
+    await Promise.all([
+      tokenV2.deployTransaction.wait(),
+      rewardTokenV2.deployTransaction.wait()
+    ])
+    const poolv2 = await upgrades.deployProxy(
+      new Pool__factory(owner),
+      [
+        tokenV2.address,
+        rewardTokenV2.address
+      ]
+    )
+    const upgraded = await upgrades.upgradeProxy(poolv2.address, new Pool__factory(owner))
+    const _token = await upgraded.token()
+    const _rewardToken = await upgraded.rewardToken()
+    expect(tokenV2.address).to.eq(_token)
+    expect(rewardTokenV2.address).to.eq(_rewardToken)
   })
 
   describe("Enable to deposit & get rewardToken", () => {
