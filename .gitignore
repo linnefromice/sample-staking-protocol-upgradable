@@ -11,3 +11,5 @@ artifacts
 # Customize
 outputs/contracts-localhost.json
 tmp
+## OpenZeppelin
+.openzeppelin/unknown-*.json
