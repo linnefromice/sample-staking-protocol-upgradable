@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
-import { MintableERC20__factory, Pool__factory, StakingPool__factory } from "../../typechain";
+import { MintableERC20__factory, Pool__factory } from "../../typechain";
 
 describe("Pool", () => {
   const setup = async (deployer: SignerWithAddress) => {
