@@ -1,5 +1,5 @@
 import { ethers, network, upgrades } from "hardhat";
-import { MintableERC20__factory, NotificationContract__factory, Pool, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
+import { MintableERC20__factory, NotificationContract__factory, Pool, Pool__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
 import {
   writeContractAddress,
   resetContractAddressesJson,

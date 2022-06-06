@@ -1,5 +1,5 @@
 import { ethers, upgrades } from "hardhat";
-import { MintableERC20__factory, Pool, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
+import { MintableERC20__factory, Pool, Pool__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
 
 async function main() {
   console.log("START deploy")
