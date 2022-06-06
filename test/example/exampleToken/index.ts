@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai"
 import { ContractTransaction } from "ethers"
 import { ethers, upgrades } from "hardhat"
-import { ExampleTokenV2__factory, ExampleToken__factory } from "../../../typechain"
+import { ExampleTokenV2__factory, ExampleTokenV3__factory, ExampleToken__factory } from "../../../typechain"
 
 describe("ExampleToken", () => {
   const setup = async (deployer: SignerWithAddress) => {
@@ -137,6 +137,35 @@ describe("ExampleToken", () => {
           await upgraded.upgradeNextVersionWithUpgradeable()
           await expect(upgraded.upgradeNextVersionWithUpgradeable()).to.be.revertedWith("Initializable: contract is already initialized")
         })  
+      })
+
+      it("Continuous upgrade", async () => {
+        const [owner] = await ethers.getSigners();
+        const { token } = await setup(owner)
+
+        const v2 = await upgrades.upgradeProxy(token, new ExampleTokenV2__factory(owner), { call: { fn: "upgradeNextVersionWithUpgradeable" }})
+        const [_name, _symbol, _contractVersion, _upgradedVersion] = await Promise.all([
+          v2.name(),
+          v2.symbol(),
+          v2.contractVersion(),
+          v2.upgradedVersion(),
+        ]);
+        expect(_name).to.eq("Example Token V2")
+        expect(_symbol).to.eq("TOKENV2")
+        expect(_contractVersion.toNumber()).to.eq(2)
+        expect(_upgradedVersion.toNumber()).to.eq(2)
+
+        const v3 = await upgrades.upgradeProxy(token, new ExampleTokenV3__factory(owner), { call: { fn: "upgradeNextVersionWithUpgradeable" }})
+        const [__name, __symbol, __contractVersion, __upgradedVersion] = await Promise.all([
+          v3.name(),
+          v3.symbol(),
+          v3.contractVersion(),
+          v3.upgradedVersion(),
+        ]);
+        expect(__name).to.eq("Example Token V3")
+        expect(__symbol).to.eq("TOKENV3")
+        expect(__contractVersion.toNumber()).to.eq(3)
+        expect(__upgradedVersion.toNumber()).to.eq(3)
       })
     })
   })
