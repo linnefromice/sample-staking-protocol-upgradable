@@ -10,6 +10,7 @@ contract UpgradableSampleVeToken is Initializable, ERC20Upgradeable, OwnableUpgr
 
   function initialize(address _operator) public initializer {
     __ERC20_init("Sample Vote Escrow Token", "SAMPLEveTOKEN");
+    __Ownable_init();
     operator = _operator;
   }
 
