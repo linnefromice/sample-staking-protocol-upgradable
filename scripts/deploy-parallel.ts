@@ -1,5 +1,5 @@
-import { ethers } from "hardhat";
-import { MintableERC20__factory, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool__factory } from "../typechain";
+import { ethers, upgrades } from "hardhat";
+import { MintableERC20__factory, Pool, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
 
 async function main() {
   console.log("START deploy")
@@ -18,24 +18,38 @@ async function main() {
 
   // main deployments
   console.log(`> Deploy GovToken`)
-  const govToken = await new SampleGovToken__factory(owner).deploy()
+  const govToken = (await upgrades.deployProxy(
+    new UpgradableSampleGovToken__factory(owner)
+  )) as UpgradableSampleGovToken
   await govToken.deployTransaction.wait()
 
   console.log(`> Deploy Pools`)
   const [daiPool, trueUsdPool] = await Promise.all([
-    new Pool__factory(owner).deploy(mockDai.address, govToken.address),
-    new Pool__factory(owner).deploy(mockTrueUsd.address, govToken.address)
-  ])
+    upgrades.deployProxy(
+      new Pool__factory(owner),
+      [mockDai.address, govToken.address]
+    ),
+    upgrades.deployProxy(
+      new Pool__factory(owner),
+      [mockTrueUsd.address, govToken.address]
+    )
+  ]) as [Pool, Pool]
   await Promise.all([
     daiPool.deployTransaction.wait(),
     trueUsdPool.deployTransaction.wait()
   ])
 
   console.log(`> Deploy VeToken`)
-  const veToken = await new SampleVeToken__factory(owner).deploy(owner.address)
+  const veToken = (await upgrades.deployProxy(
+    new UpgradableSampleVeToken__factory(owner),
+    [owner.address]
+  )) as UpgradableSampleVeToken
   await veToken.deployTransaction.wait()
   console.log(`> Deploy StakingToken`)
-  const stakingPool = await new StakingPool__factory(owner).deploy(govToken.address, veToken.address)
+  const stakingPool = (await upgrades.deployProxy(
+    new StakingPool__factory(owner),
+    [govToken.address, veToken.address]
+  )) as StakingPool
   await stakingPool.deployTransaction.wait()
   console.log(`> SampleVeToken.setOperator`)
   await veToken.setOperator(stakingPool.address)
