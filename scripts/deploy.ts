@@ -1,5 +1,5 @@
-import { ethers, network } from "hardhat";
-import { MintableERC20__factory, NotificationContract__factory, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool__factory } from "../typechain";
+import { ethers, network, upgrades } from "hardhat";
+import { MintableERC20__factory, NotificationContract__factory, Pool, Pool__factory, SampleGovToken__factory, SampleVeToken__factory, StakingPool, StakingPool__factory, UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../typechain";
 import {
   writeContractAddress,
   resetContractAddressesJson,
@@ -50,7 +50,9 @@ async function main() {
 
   // main deployments
   console.log(`> Deploy GovToken`)
-  const govToken = await new SampleGovToken__factory(owner).deploy()
+  const govToken = (await upgrades.deployProxy(
+    new UpgradableSampleGovToken__factory(owner)
+  )) as UpgradableSampleGovToken
   await govToken.deployTransaction.wait()
   _writeToJson({
     network: network.name,
@@ -60,10 +62,16 @@ async function main() {
   })
   
   console.log(`> Deploy daiPool`)
-  const daiPool = await new Pool__factory(owner).deploy(mockDai.address, govToken.address)
+  const daiPool = (await upgrades.deployProxy(
+    new Pool__factory(owner),
+    [mockDai.address, govToken.address]
+  )) as Pool
   await daiPool.deployTransaction.wait()
   console.log(`> Deploy trueUsdPool`)
-  const trueUsdPool = await new Pool__factory(owner).deploy(mockTrueUsd.address, govToken.address)
+  const trueUsdPool = (await upgrades.deployProxy(
+    new Pool__factory(owner),
+    [mockTrueUsd.address, govToken.address]
+  )) as Pool
   await trueUsdPool.deployTransaction.wait()
   _writeToJson({
     network: network.name,
@@ -79,7 +87,10 @@ async function main() {
   })
 
   console.log(`> Deploy VeToken`)
-  const veToken = await new SampleVeToken__factory(owner).deploy(owner.address)
+  const veToken = (await upgrades.deployProxy(
+    new UpgradableSampleVeToken__factory(owner),
+    [owner.address]
+  )) as UpgradableSampleVeToken
   await veToken.deployTransaction.wait()
   _writeToJson({
     network: network.name,
@@ -89,7 +100,10 @@ async function main() {
   })
 
   console.log(`> Deploy StakingToken`)
-  const stakingPool = await new StakingPool__factory(owner).deploy(govToken.address, veToken.address)
+  const stakingPool = (await upgrades.deployProxy(
+    new StakingPool__factory(owner),
+    [govToken.address, veToken.address]
+  )) as StakingPool
   await stakingPool.deployTransaction.wait()
   _writeToJson({
     network: network.name,
