@@ -102,4 +102,39 @@ describe("VeToken", async () => {
     expect(symbol).to.eq("SAMPLEveTOKEN")
     expect(operator.toLowerCase()).to.eq(owner.address.toLowerCase())
   })
+
+  describe("functions", () => {
+    describe(".setOperator", () => {
+      it("success", async () => {
+        const [owner, user] = await ethers.getSigners()
+        const { token } = await setup(owner)
+        let operator: string
+
+        // Prerequisites
+        const ownerAddress = await token.connect(ethers.provider).owner()
+        expect(ownerAddress.toLowerCase()).to.eq(owner.address.toLowerCase())
+        operator = await token.connect(ethers.provider).operator()
+        expect(operator.toLowerCase()).to.eq(owner.address.toLowerCase())
+
+        // Execute
+        const tx = await token.connect(owner).setOperator(user.address)
+        await tx.wait()
+        operator = await token.connect(ethers.provider).operator()
+        expect(operator.toLowerCase()).to.eq(user.address.toLowerCase())
+      })
+
+      it("revert", async () => {
+        const [owner, user] = await ethers.getSigners()
+        const { token } = await setup(owner)
+
+        // Prerequisites
+        const ownerAddress = await token.connect(ethers.provider).owner()
+        expect(ownerAddress.toLowerCase()).to.eq(owner.address.toLowerCase())
+
+        // Execute
+        await expect(token.connect(user).setOperator(user.address))
+          .to.be.revertedWith("Ownable: caller is not the owner")
+      })
+    })
+  })
 })
