@@ -10,6 +10,8 @@ contract UpgradableSampleGovToken is Initializable, ERC20Upgradeable, OwnableUpg
 
   function initialize() public initializer {
     __ERC20_init("Sample Governance Token", "SAMPLEGOVTOKEN");
+    __Ownable_init();
+    minterList[msg.sender] = true;
   }
 
   function addMinter(address _minter) external onlyOwner {
