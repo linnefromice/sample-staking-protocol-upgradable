@@ -78,6 +78,7 @@ describe("GovToken", async () => {
           .to.be.revertedWith("Ownable: caller is not the owner")
       })
     })
+    it.skip(".mint", () => {})
   })
 })
 
@@ -136,5 +137,6 @@ describe("VeToken", async () => {
           .to.be.revertedWith("Ownable: caller is not the owner")
       })
     })
+    it.skip(".mint", () => {})
   })
 })
