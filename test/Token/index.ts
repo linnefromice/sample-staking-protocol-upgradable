@@ -12,15 +12,19 @@ describe("GovToken", async () => {
     await token.deployTransaction.wait()
     return { token }
   }
-  it("deploy", async () => {
+  it("deploy / .initialize", async () => {
     const [owner] = await ethers.getSigners()
     const { token } = await setup(owner)
-    const [name, symbol] = await Promise.all([
+    const [name, symbol, ownerAddress, isMinter] = await Promise.all([
       token.name(),
-      token.symbol()
+      token.symbol(),
+      token.owner(),
+      token.minterList(owner.address)
     ])
     expect(name).to.eq("Sample Governance Token")
     expect(symbol).to.eq("SAMPLEGOVTOKEN")
+    expect(ownerAddress.toLowerCase()).to.eq(owner.address.toLowerCase())
+    expect(isMinter).to.eq(true)
   })
 
   describe("functions", () => {
