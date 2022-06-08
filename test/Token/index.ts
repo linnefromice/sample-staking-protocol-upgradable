@@ -90,14 +90,16 @@ describe("VeToken", async () => {
     await token.deployTransaction.wait()
     return { token }
   }
-  it("deploy", async () => {
+  it("deploy / .initializer", async () => {
     const [owner] = await ethers.getSigners()
     const { token } = await setup(owner)
-    const [name, symbol] = await Promise.all([
+    const [name, symbol, operator] = await Promise.all([
       token.name(),
-      token.symbol()
+      token.symbol(),
+      token.operator()
     ])
     expect(name).to.eq("Sample Vote Escrow Token")
     expect(symbol).to.eq("SAMPLEveTOKEN")
+    expect(operator.toLowerCase()).to.eq(owner.address.toLowerCase())
   })
 })
