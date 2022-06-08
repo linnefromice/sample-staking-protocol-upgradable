@@ -9,6 +9,8 @@
     "mock-mint:local": "hardhat run scripts/mock-mint.ts --network localhost",
     "scenario-in:local": "hardhat run scripts/scenario-in.ts --network localhost",
     "scenario-out:local": "hardhat run scripts/scenario-out.ts --network localhost",
+    "task:check:deployed-contract": "hardhat run scripts/check-deployed-contracts.ts --network localhost",
+    "task:check:user-status": "hardhat run scripts/check-user-status.ts --network localhost",
     "task:notification:all": "hardhat notification:all --network localhost"
   },
   "devDependencies": {
