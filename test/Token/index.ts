@@ -1,5 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { expect } from "chai"
+import { ContractTransaction } from "ethers"
 import { ethers, upgrades } from "hardhat"
 import { UpgradableSampleGovToken, UpgradableSampleGovToken__factory, UpgradableSampleVeToken, UpgradableSampleVeToken__factory } from "../../typechain"
 
@@ -20,6 +21,59 @@ describe("GovToken", async () => {
     ])
     expect(name).to.eq("Sample Governance Token")
     expect(symbol).to.eq("SAMPLEGOVTOKEN")
+  })
+
+  describe("functions", () => {
+    describe(".addMinter / .removeMinter", () => {
+      it("success", async () => {
+        const [owner, user] = await ethers.getSigners()
+        const { token } = await setup(owner)
+        let isMinter: boolean
+        let tx: ContractTransaction
+
+        // Prerequisites
+        isMinter = await token.connect(ethers.provider).minterList(user.address)
+        expect(isMinter).to.false
+
+        // Execute - .addMinter
+        tx = await token.connect(owner).addMinter(user.address)
+        await tx.wait()
+        isMinter = await token.connect(ethers.provider).minterList(user.address)
+        expect(isMinter).to.true
+
+        // Execute - .removeMinter
+        tx = await token.connect(owner).removeMinter(user.address)
+        await tx.wait()
+        isMinter = await token.connect(ethers.provider).minterList(user.address)
+        expect(isMinter).to.false
+      })
+
+      it("revert .addMinter if not owner", async () => {
+        const [owner, user] = await ethers.getSigners()
+        const { token } = await setup(owner)
+
+        // Prerequisites
+        const ownerAddress = await token.connect(ethers.provider).owner()
+        expect(ownerAddress.toLowerCase()).to.eq(owner.address.toLowerCase())
+
+        // Execute
+        await expect(token.connect(user).addMinter(user.address))
+          .to.be.revertedWith("Ownable: caller is not the owner")
+      })
+
+      it("revert .removeMinter if not owner", async () => {
+        const [owner, user] = await ethers.getSigners()
+        const { token } = await setup(owner)
+
+        // Prerequisites
+        const ownerAddress = await token.connect(ethers.provider).owner()
+        expect(ownerAddress.toLowerCase()).to.eq(owner.address.toLowerCase())
+
+        // Execute
+        await expect(token.connect(user).removeMinter(user.address))
+          .to.be.revertedWith("Ownable: caller is not the owner")
+      })
+    })
   })
 })
 
